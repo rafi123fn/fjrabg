@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selamat Ulang Tahun</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: radial-gradient(circle at top, #1b2735, #090a0f);
+  overflow: hidden;
+  color: white;
+}
+
+/* BINTANG */
+.stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.stars span {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  animation: move 10s linear infinite;
+}
+
+@keyframes move {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-1000px); opacity: 0; }
+}
+
+/* CONTAINER */
+.container {
+  position: relative;
+  z-index: 2;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  text-align: center;
+  max-width: 750px;
+  padding: 20px;
+  animation: fadeIn 2s ease;
+}
+
+h1 {
+  font-size: 2.7em;
+  margin-bottom: 20px;
+}
+
+p {
+  font-size: 1.2em;
+  line-height: 1.8em;
+  min-height: 140px;
+}
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 20px;
+  background: white;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.btn {
+  margin-top: 30px;
+  padding: 12px 35px;
+  border-radius: 30px;
+  border: none;
+  background: white;
+  color: #090a0f;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(30px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* CONFETTI */
+.confetti {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.confetti span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  animation: fall 4s linear infinite;
+}
+
+@keyframes fall {
+  from { transform: translateY(-10px); }
+  to { transform: translateY(100vh); }
+}
+
+/* FOTO */
+.photo {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0;
+  transition: 1.5s ease;
+  z-index: 3;
+}
+
+.photo img {
+  max-width: 300px;
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(255,255,255,0.3);
+}
+
+.photo.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="confetti" id="confetti"></div>
+
+<!-- FOTO -->
+<div class="photo" id="photo">
+  <img src="abang.jpg">
+</div>
+
+<audio id="music" loop>
+  <source src="nina.mp3" type="audio/mpeg">
+</audio>
+
+<div class="container">
+  <div class="card">
+    <h1>Selamat Ulang Tahun</h1>
+    <p id="text"></p>
+    <span class="cursor"></span>
+    <br>
+    <button class="btn" onclick="nextText()">Lanjut</button>
+  </div>
+</div>
+
+<script>
+
+// BINTANG
+const stars = document.getElementById("stars");
+for (let i = 0; i < 100; i++) {
+  let s = document.createElement("span");
+  s.style.left = Math.random()*100+"%";
+  s.style.top = Math.random()*100+"%";
+  s.style.animationDuration = (Math.random()*5+5)+"s";
+  stars.appendChild(s);
+}
+
+// CONFETTI
+const confetti = document.getElementById("confetti");
+function startConfetti() {
+  for (let i = 0; i < 80; i++) {
+    let c = document.createElement("span");
+    c.style.left = Math.random()*100+"%";
+    c.style.animationDuration = (Math.random()*3+2)+"s";
+    confetti.appendChild(c);
+  }
+}
+
+// TEXT
+const texts = [
+`Selamat ulang tahun untuk abang yang selalu bekerja keras dan tidak pernah menyerah dalam menjalani kehidupan.`,
+
+`Semoga setiap langkah yang ditempuh selalu dimudahkan, setiap usaha membawa hasil terbaik, dan setiap harapan perlahan menjadi kenyataan.`,
+
+`Terima kasih karena telah menjadi sosok yang kuat, bertanggung jawab, dan selalu bisa diandalkan bagi keluarga.`,
+
+`Walaupun jarak memisahkan, doa baik akan selalu menyertai di setiap langkah di sana.`,
+
+`Semoga kesehatan, keberkahan, dan kebahagiaan senantiasa menyertai setiap perjalanan hidup.`,
+
+`Hari ini bukan hanya tentang bertambahnya usia, tetapi juga tentang perjalanan panjang yang telah dilalui dengan penuh keteguhan.`,
+
+`Di hari spesial ini, ada satu harapan kecil yang mungkin bisa membuat hari semakin berwarna... (THR 500 rb bang)`,
+
+`Tetaplah menjadi pribadi yang hebat, dan percayalah bahwa semua usaha akan berbuah indah pada waktunya.`,
+
+`Selamat ulang tahun, abang. respect abang🫡`
+];
+
+let index = 0;
+let charIndex = 0;
+let isTyping = false;
+let interval;
+
+function typeText() {
+  isTyping = true;
+  const el = document.getElementById("text");
+
+  interval = setInterval(() => {
+    if (charIndex < texts[index].length) {
+      el.innerHTML += texts[index][charIndex];
+      charIndex++;
+    } else {
+      clearInterval(interval);
+      isTyping = false;
+    }
+  }, 30);
+}
+
+function nextText() {
+  const el = document.getElementById("text");
+
+  if (isTyping) {
+    clearInterval(interval);
+    el.innerHTML = texts[index];
+    isTyping = false;
+    return;
+  }
+
+  index++;
+
+  if (index < texts.length) {
+    el.innerHTML = "";
+    charIndex = 0;
+    typeText();
+
+    if (index === texts.length - 1) {
+      startConfetti();
+
+      // munculin foto
+      document.getElementById("photo").classList.add("show");
+    }
+
+  } else {
+    document.querySelector(".btn").innerText = "Selesai";
+  }
+}
+
+// MUSIC
+window.addEventListener("click", () => {
+  document.getElementById("music").play().catch(()=>{});
+}, { once: true });
+
+// START
+window.onload = typeText;
+
+</script>
+
+</body>
+</html>
